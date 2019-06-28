@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Messages;
 use App\User;
+use App\BrowserKey;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
 use App\Traits\helpFunctions;
@@ -41,7 +42,7 @@ class MessagesController extends Controller
      */
     public function store()
     {
-        $taisykles = array('text' => array('required', 'min:3'));
+        $taisykles = array('title' => array('required', 'min:3'), 'text' => array('required', 'min:3'));
 		$validator = Validator::make(Input::all(), $taisykles);
 
 		if ($validator->fails())
@@ -51,42 +52,44 @@ class MessagesController extends Controller
 		} else {
 
 			$message = new Messages;
+			$message->title = Input::get("title");
 			$message->text = Input::get("text");
 			$message->status = Input::get("status");
 			$message->save();
+			$keys = array();
+			if(Input::get("status")=='0'){
+				$keys=BrowserKey::pluck('key')->toArray();
+			}
 			
 			$json_data=[
-    "registration_ids" => array('fhIKsmodiJ8:APA91bH-F8_JcX9qJ00BHHwKvFjkT640FWJbZfC4WPK2QvMrgZ32SXdUXqWLKiQfzBj6Wj6uJlkI2lo9Cl18mu8qIafERCbYIXBniG4o3fNffFHIiGTXV5hZHO3CkMmKFclj6AmISUzP', 'dvYiBfMj630:APA91bGhXL4PTH80FUNlFEAwAEWvdn5hLJz2yd6BMzONqJSZ10chCMNV9r2iwTFYnxtIzTldyC_7LXKtkiypR0_7obZXFihh05CM6g8XMa-9SSTv2f_dAFsC8rVR6KlDR3eg0MG6itoL'),
-    "notification" => [
-        "body" => Input::get("text"),
-        "title" => "Pranešimas"
-    ]
-];
-$data = json_encode($json_data);
-//FCM API end-point
-$url = 'https://fcm.googleapis.com/fcm/send';
-//api_key in Firebase Console -> Project Settings -> CLOUD MESSAGING -> Server key
-$server_key = 'AAAAbQqke5I:APA91bGuP0VTRUj7SaYEZA3k1gd4hY0nTy4ZswoZAp2liuy79jbHbFnYHjGU7agS4TLCPpFskg2IIbaZHRyY3kFgoqaPS91Ts0B3fnJRY1r21dISCH6UfifYbAnYkDyte3O1Ru82PiEu';
-//header with content_type api key
-$headers = array(
-    'Content-Type:application/json',
-    'Authorization:key='.$server_key
-);
-//CURL request to route notification to FCM connection server (provided by Google)
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $url);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-$result = curl_exec($ch);
-if ($result === FALSE) {
-    die('Oops! FCM Send Error: ' . curl_error($ch));
-}
-curl_close($ch);
-exit($result);
+				"registration_ids" => $keys,
+				"notification" => [
+					"body" => Input::get("text"),
+					"title" => Input::get("title")
+				]
+			];
+			$data = json_encode($json_data);
+			$url = 'https://fcm.googleapis.com/fcm/send';
+			$server_key = 'AAAAbQqke5I:APA91bGuP0VTRUj7SaYEZA3k1gd4hY0nTy4ZswoZAp2liuy79jbHbFnYHjGU7agS4TLCPpFskg2IIbaZHRyY3kFgoqaPS91Ts0B3fnJRY1r21dISCH6UfifYbAnYkDyte3O1Ru82PiEu';
+			$headers = array(
+				'Content-Type:application/json',
+				'Authorization:key='.$server_key
+			);
+			//CURL request to route notification to FCM connection server (provided by Google)
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			$result = curl_exec($ch);
+			if ($result === FALSE) {
+				die('Oops! FCM Send Error: ' . curl_error($ch));
+			}
+			curl_close($ch);
+//exit($result);
             return redirect('/admin/messages')->with('gerai', 'Pranešimas sukurtas ir išsiųstas');
 		}
     }

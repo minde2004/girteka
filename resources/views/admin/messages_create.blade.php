@@ -19,6 +19,11 @@
                 {{  Form::open(array('action' => 'admin\MessagesController@store')) }}
 
               <div class="box-body">
+				<div class="form-group @if($errors->has('title')) has-error @endif"><?php //$klaida="aaaa"; ?>
+                  <label for="title">Pavadinimas</label>
+                  <input class="form-control" value="@if(null!==old('title')){{ old('title') }}@endif" name="title" placeholder="Pavadinimas" type="text">
+				  <span class="help-block">{{$errors->first('title')}}</span>
+                </div>
                 <div class="form-group @if($errors->has('text')) has-error @endif"><?php //$klaida="aaaa"; ?>
                   <label for="text">Pranešimas</label>
                   <input class="form-control" value="@if(null!==old('text')){{ old('text') }}@endif" name="text" placeholder="Pranešimas" type="text">
@@ -27,11 +32,11 @@
 				<div class="form-group @if($errors->has('status')) has-error @endif"><?php //$klaida="aaaa"; ?>
                   <label for="status">Siuntimo tipas</label><br/>
 				  <label>
-                  <input class="minimal-blue" value="0" @if(null!==old('status')) @if(old('status')===0){{ "checked" }} @endif @else {{ "checked" }} @endif name="status" type="radio">
+                  <input class="minimal-blue" value="0" @if(null!==old('status')) @if(old('status')==='0'){{ "checked" }} @endif @else {{ "checked" }} @endif name="status" type="radio">
 				  Siųsti visiems
 				  </label>
 				  <label>
-                  <input class="minimal-blue" value="1" @if(null!==old('status') && old('status')===1) {{ "checked" }} @endif name="status" type="radio">
+                  <input class="minimal-blue" value="1" @if(null!==old('status') && old('status')==='1') {{ "checked" }} @endif name="status" type="radio">
 				  Siųsti pasirinktinai
 				  </label>
                 </div>
