@@ -72,7 +72,9 @@
 			  
 			  </table>
             </div>
-			<div class="box-footer clearfix"></div>
+			<div class="box-footer clearfix">
+			{{ $messages->links() }}
+			</div>
             <!-- /.box-body -->
           </div>
           <!-- /.box -->

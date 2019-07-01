@@ -82,7 +82,9 @@
 			  
 			  </table>
             </div>
-			<div class="box-footer clearfix"></div>
+			<div class="box-footer clearfix">
+			{{ $users->links() }}
+			</div>
             <!-- /.box-body -->
           </div>
           <!-- /.box -->

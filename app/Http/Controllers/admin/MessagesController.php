@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Messages;
 use App\User;
 use App\BrowserKey;
+use Mail;
+use App\Mail\SendMail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
 use App\Traits\helpFunctions;
@@ -50,13 +52,16 @@ class MessagesController extends Controller
 			Input::flash();
 			return redirect('/admin/messages/create')->with('klaida', 'Neužpildyti reikalingi laukeliai')->withErrors($validator);
 		} else {
-
+			
 			$message = new Messages;
 			$message->title = Input::get("title");
 			$message->text = Input::get("text");
 			$message->status = Input::get("status");
 			$message->save();
-			$keys = array();
+			
+			
+			
+			/*$keys = array();
 			if(Input::get("status")=='0'){
 				$keys=BrowserKey::pluck('key')->toArray();
 			}
@@ -88,8 +93,13 @@ class MessagesController extends Controller
 			if ($result === FALSE) {
 				die('Oops! FCM Send Error: ' . curl_error($ch));
 			}
-			curl_close($ch);
-//exit($result);
+			curl_close($ch);*/
+			
+			$users=User::doesnthave('usersbrowserkey')->get();
+			foreach($users as $user){
+				Mail::to($user->email)->send(new SendMail());
+			}
+			
             return redirect('/admin/messages')->with('gerai', 'Pranešimas sukurtas ir išsiųstas');
 		}
     }
@@ -102,7 +112,7 @@ class MessagesController extends Controller
      */
     public function show()
     {
-        return view('admin.messages', ['lapo_pavadinimas' => 'Pranešimai', 'messages' => Messages::orderBy('id', 'desc')->get(), 'users' => User::orderBy('name')->get()]);
+        return view('admin.messages', ['lapo_pavadinimas' => 'Pranešimai', 'messages' => Messages::orderBy('id', 'desc')->paginate(20), 'users' => User::orderBy('name')->get()]);
     }
 
     /**

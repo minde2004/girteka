@@ -24,7 +24,7 @@ class UsersController extends Controller
 	}
     public function show()
     {
-        return view('admin.users', ['lapo_pavadinimas' => 'Vartotojai', 'users' => User::orderBy('level', 'desc')->orderBy('name')->get()]);
+        return view('admin.users', ['lapo_pavadinimas' => 'Vartotojai', 'users' => User::orderBy('level', 'desc')->orderBy('name')->paginate(20)]);
     }
 	
 	public function search()
